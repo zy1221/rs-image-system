@@ -2,7 +2,6 @@ import React from 'react';
 import ol from 'openlayers';
 import 'openlayers/css/ol.css';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-//import { notification } from 'antd';
 import infodialog from '../infoDialog/infodialog';
 
 
@@ -46,15 +45,8 @@ class MyContextmenu extends React.Component {
         var imageName=e.target.parentElement.parentElement.innerText.split('\n')[0];
 
         var id=imageLocation[0]+'->'+imageCategory+'->'+imageName;
-        if(window.vectorLayer.getSource()){
-            var features=window.vectorLayer.getSource().getFeatures()
-            for(var i=0;i<features.length;i++){
-                if(features[i].R.id===id){
-                    window.vectorLayer.getSource().removeFeature(features[i])
-                }
-            }
-        }
-   
+        var feature=window.vectorLayer.getSource().getFeatureById(id);
+        window.vectorLayer.getSource().removeFeature(feature)
     }
     handleClick = (e) => {
         var parentKeyStr=e.target.parentElement.parentElement.parentElement.parentElement.id; 
@@ -76,11 +68,11 @@ class MyContextmenu extends React.Component {
         var id=imageLocation[0]+'->'+imageLocation[1].split('$')[0]+'->'+e.target.innerText;
         var iconFeature = new ol.Feature({
             geometry: new ol.geom.Point([lonlat[0].LON, lonlat[0].LAT]),
-            id:id,
             name: this.state.imageName,
             population: 4000,
             rainfall: 500
         });
+        iconFeature.setId(id);
         var name=imageLocation[0]+'/'+imageCategory+'/'+imageName;
         var src='http://localhost:3000/static/'+name;
         var iconStyle = new ol.style.Style({
@@ -92,9 +84,8 @@ class MyContextmenu extends React.Component {
             }))
         });
         iconFeature.setStyle(iconStyle);
-        var features=window.vectorLayer.getSource().getFeatures()
-        
-        if(featuresContains(features,iconFeature)===false){
+    
+        if(window.vectorLayer.getSource().getFeatureById(id)===null){
             window.vectorLayer.getSource().addFeature(iconFeature);
             window.view.animate({
                 center:[lonlat[0].LON, lonlat[0].LAT],
